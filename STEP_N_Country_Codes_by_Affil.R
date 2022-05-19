@@ -82,8 +82,18 @@ country_summary <- as.data.frame(table(with_country['country'], useNA = "ifany")
 ## 3/472 returned multiple locations (including US, [state] issues) = ambiguous
 ## Final - 63 NA out of 472 records (87% assigned country, 13% could not)
 
-
 ### TEST AREA ####
+
+## IDs for Aravind to try the ePMC algorithm  
+
+write.table(y$id,"epmc_geo_test_2022-05-19.csv", col.names = F, row.names = F)
+
+##test two names, edited y to have New Zealand in 1st record (34167460) and South Africa in 20th (33813885)
+##failed
+
+write.csv(y,".csv", row.names = FALSE)
+y <- read.csv("2name_test.csv")
+
 ## Getting *ALL* affiliations
 
 test_details <- epmc_details(ext_id = 34314492)
