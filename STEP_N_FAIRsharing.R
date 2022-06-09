@@ -15,7 +15,7 @@ library(httr)
 ######### PART 1: Extract Records from FAIRsharing ####### 
 ##======================================================##
 
-##login to FAIRsharing
+## login FAIRsharing
 
 url<-'https://api.fairsharing.org/users/sign_in'
 request <- POST(url,
@@ -59,8 +59,8 @@ names(dbs)[names(dbs)=="value"]<- "subjects"
 ##======================================================##
 
 ## find unique subject classifications in FAIRsharing
-all_fs_subjects <- as.data.frame(unique(unlist(dbs$subjects)))
-write.csv(all_fs_subjects,"all_FAIRsharing_subjects_2022-06-09.csv", row.names = FALSE) 
+all_fs_subjects <- as.data.frame(unique(unlist(dbs$subjects))) ##340 return
+## write.csv(all_fs_subjects,"all_FAIRsharing_subjects_2022-06-09.csv", row.names = FALSE) 
 
 ## closest is "life sciences" - "biomedical" seems like will return clinical dbs, too
 
@@ -71,7 +71,7 @@ ls_db_count <- dbs %>% count(match)
 ## 1027 NA
 
 ## may need dbs<- apply(dbs,2,as.character)
-write.csv(dbs,"all_FAIRsharing_dbs_2022-06-09.csv", row.names = FALSE) 
+## write.csv(dbs,"all_FAIRsharing_dbs_2022-06-09.csv", row.names = FALSE) 
 
 
 
