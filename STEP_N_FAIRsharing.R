@@ -2,8 +2,8 @@
 ## Parts: 1) Retrieve records 2) filter to biodata resources
 ## Package(s): RCurl, jsonlite, tidyverse, data.table, httr
 ## Input file(s): FAIRsharing login credential script
-## Output file(s): fairsharing_dbs_all_2022-06-09.csv
-## NOTES: Run FAIRsharing login credential script first to obtain "hji_login" argument for the below. For rest, see API documentation on https://fairsharing.org/API_doc
+## Output file(s): fairsharing_dbs_all_2022-06-09.csv, fairsharing_subjects_all_2022-06-09.csv
+## NOTES: FAIRsharing data is under CC-BY-SA - do not push output file to Github! Run FAIRsharing login credential script first to obtain "hji_login" argument for the below. For rest, see API documentation on https://fairsharing.org/API_doc and https://api.fairsharing.org/model/database_schema.json
 
 library(RCurl)
 library(jsonlite)
@@ -15,7 +15,7 @@ library(httr)
 ######### PART 1: Extract Records from FAIRsharing ####### 
 ##======================================================##
 
-## login FAIRsharing
+## run FAIRsharing login script to get hji_login argument
 
 url<-'https://api.fairsharing.org/users/sign_in'
 request <- POST(url,
@@ -60,7 +60,7 @@ names(dbs)[names(dbs)=="value"]<- "subjects"
 
 ## find unique subject classifications in FAIRsharing
 all_fs_subjects <- as.data.frame(unique(unlist(dbs$subjects))) ##340 return
-## write.csv(all_fs_subjects,"all_FAIRsharing_subjects_2022-06-09.csv", row.names = FALSE) 
+## write.csv(all_fs_subjects,"fairsharing_subjects_all_2022-06-09.csv", row.names = FALSE) 
 
 ## closest is "life sciences" - "biomedical" seems like will return clinical dbs, too
 
@@ -70,8 +70,8 @@ ls_db_count <- dbs %>% count(match)
 ## 858 life science matches
 ## 1027 NA
 
-## may need dbs<- apply(dbs,2,as.character)
-## write.csv(dbs,"all_FAIRsharing_dbs_2022-06-09.csv", row.names = FALSE) 
+## to write files, may need to do ... dbs <- apply(dbs,2,as.character)
+## write.csv(dbs,"fairsharing_dbs_all_2022-06-09.csv", row.names = FALSE) 
 
 
 
