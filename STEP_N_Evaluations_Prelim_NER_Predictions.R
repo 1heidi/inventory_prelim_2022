@@ -1,7 +1,7 @@
 ## Purpose: Evaluate NER Predictions
 ## Parts: 1) Find the best names for the resources across predicted names 2) plotting, sanity checks, and sampling
 ## Package(s): tidyverse
-## Input file(s): predictions_2022-06-18.csv
+## Input file(s): ner_predictions_2022-06-18.csv
 ## Output file(s): eval_predictions_all_2022-07-01.csv, eval_predictions_sample_2022-07-01.csv
 
 library(tidyverse)
@@ -10,7 +10,7 @@ library(tidyverse)
 ########## PART 1: Find ~ best matches for names ########## 
 ##=======================================================##
 
-pred <- read.csv("predictions_2022-06-18.csv")
+pred <- read.csv("ner_predictions_2022-06-18.csv")
 
 ## separate lists using overestimates potential names/urls
 pred <- separate(pred, 'common_name', paste("common_name", 1:10, sep="_"), sep=",", extra="drop")
