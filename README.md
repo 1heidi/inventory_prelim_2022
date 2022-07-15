@@ -3,13 +3,13 @@
 #### Evaluating preliminary NER prediction results
 
 * work-in-progress - currently: calculated best predicted names (common and full) and created a 10% sample for manual review and evaluation; evaluation completed (file name ner_predictions_sample_hji_2022-07-01_V4.csv)
-** 97.1% at least 1 common name, mean probability of highest = 0.9681
-** 34.7% at least 1 full name, mean probability of highest = 0.8732
+  * 97.1% at least 1 common name, mean probability of highest = 0.9681
+  * 34.7% at least 1 full name, mean probability of highest = 0.8732
 
 * precision via manual review 
-** classification 439 correct/(439 correct + 29 incorrect) = 0.9380
-** common name 425 correct/(425 correct + 10 incorrect + 22 partial) = 0.9299
-** full name 97 correct/(97 correct + 7 incorrect + 53 partial) = 0.6178
+  * classification 439 correct/(439 correct + 29 incorrect) = 0.9380
+  * common name 425 correct/(425 correct + 10 incorrect + 22 partial) = 0.9299
+  * full name 97 correct/(97 correct + 7 incorrect + 53 partial) = 0.6178
 
 #### Extracting County from Affiliations in ePMC Records
 
