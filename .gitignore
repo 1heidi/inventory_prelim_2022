@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+## files
+PRIVATE_FAIRsharing_Login.R
+fairsharing_life_sci_2022-07-14.csv
+eval_predictions_sample_hji_2022-07-01_V4.xlsx
+
+## folders
+old/

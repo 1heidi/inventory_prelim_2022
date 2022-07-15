@@ -1,5 +1,5 @@
 ## Purpose: Evaluate NER Predictions
-## Parts: 1) Find the best names for the resources across predicted names 2) plotting, sanity checks, and sampling
+## Parts: 1) Find the best names for the resources across predicted names, 2) plotting, sanity checks, and sampling, 3) evaluate manual review of sample
 ## Package(s): tidyverse
 ## Input file(s): ner_predictions_2022-06-18.csv
 ## Output file(s): eval_predictions_all_2022-07-01.csv, eval_predictions_sample_2022-07-01.csv
@@ -123,5 +123,34 @@ slice <- sample_frac(pred, 0.1)
 write.csv(pred,"eval_predictions_all_2022-07-01.csv", row.names = FALSE)
 write.csv(slice,"eval_predictions_sample_2022-07-01.csv", row.names = FALSE)
 
+##==========================================================##
+########## PART 3: Evaluate manual review of sample ########## 
+##==========================================================##
 
+pred <- read.csv("eval_predictions_all_2022-07-01.csv")
+
+hji <- read.csv("eval_predictions_sample_hji_2022-07-01_V4.csv")
+hji2 <- select(hji, 1, 2, 32:45)
+
+class_count <- count(hji2, hji_classification)
+common_count <- count(hji2, hji_best_common)
+full_count <- count(hji2, hji_best_full)
+
+test <- hji2 %>% 
+  group_by(hji_best_common) %>%
+      mutate(mean_prob = mean(na.omit(max_common_name_prob)))
+
+test2 <- unique(select(test, hji_best_common, mean_prob))
+
+test3 <- filter(test, best_name_type == "COMMON")
+test4 <- filter(test3, hji_best_common != "CORRECT")
+
+above <- filter(hji2, max_either_prob > 0.9780) 
+## 0.76 not reviewed .... 5 of which would not be correct - 
+
+library(ggplot2)
+
+p <- ggplot(hji2, aes(x=hji_best_common, y=max_common_name_prob)) + 
+  geom_violin()
+p + stat_summary(fun.y=median, geom="point", size=2, color="red")
 
