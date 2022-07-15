@@ -1,5 +1,6 @@
 ## Purpose: Extract db records for biodata resources from re3data API
 ## Parts: 1) Retrieve all records 2) filter to life science only
+## Package(s): httr, xml2, dplyr, tidyr
 ## Output file(s): re3data_life_sci_2022-07-15.csv
 ## Note: correct schema (2.2) is here: https://gfzpublic.gfz-potsdam.de/pubman/faces/ViewItemOverviewPage.jsp?itemId=item_758898
 ## https://www.re3data.org/api/doc
