@@ -22,7 +22,7 @@ pred <- separate(pred, 'url', paste("url", 1:20, sep="_"), sep=",", extra="drop"
 ## remove all NA columns (excess from overestimates)
 pred <- pred[,colSums(is.na(pred))<nrow(pred)]
 
-## convert probablility columns to numeric
+## convert probability columns to numeric
 
 pred[, c(8:12, 18:22)] <- sapply(pred[, c(8:12, 18:22)],as.numeric)
 
