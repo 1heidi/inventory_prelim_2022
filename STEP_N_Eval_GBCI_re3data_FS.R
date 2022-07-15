@@ -17,6 +17,31 @@ re3d <- select(re3d, 1, 5, 4)
 fs <- read.csv("fairsharing_life_sci_2022-07-14.csv")
 fs <- select(fs, 1:3)
 
+#de-duplicate pred when both names and urls are the same 
+# clean urls first or end with a / or http vs https will case reduce what should be depublicated
+
+library(urltools)
+
+pred$url_1 <- sub("^http://(?:www[.])", "\\1", pred$url_1)
+pred$url_1 <- sub("^https://(?:www[.])", "\\1", pred$url_1)
+pred$url_1 <- sub("^http://", "\\1", pred$url_1)
+pred$url_1 <- sub("^https://", "\\1", pred$url_1)
+pred$url_1 <- sub("/$", "", pred$url_1)
+
+## remove 1 character names
+pred <- pred[(which(nchar(pred$best_name_overall) > 1)),]
+
+## gather IDs 
+pred <- pred %>% 
+  group_by(best_name_overall, url_1) %>% 
+   mutate(IDs = paste0(ID, collapse = ", "))
+
+##reorg and dedup
+pred <- select(pred, -1)
+pred <- pred[, c(3, 1, 2)]
+pred <- ungroup(pred)
+pred <- unique(pred)
+
 compare_pred_re3d <- full_join(pred, re3d, by = c("best_name_overall" = "repositoryName"))
 compare_pred_re3d_fs <- full_join(compare_pred_re3d, fs, by = c("best_name_overall" = "name"))
 
@@ -31,9 +56,9 @@ library(VennDiagram)
 flog.threshold(ERROR)
 
 # generate lists
-GBC_Inventory <- unique(pred$best_name_overall)
-FAIRSharing_Life_Sci <- unique(fs$name)
-re3data_Life_Sci <- unique(re3d$repositoryName)
+GBC_Inventory <- pred$best_name_overall
+FAIRSharing_Life_Sci <- fs$name
+re3data_Life_Sci <- re3d$repositoryName
 
 library(RColorBrewer)
 myCol <- brewer.pal(3, "Pastel2")
