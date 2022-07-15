@@ -1,7 +1,7 @@
 ## Purpose: Evaluate NER Predictions
 ## Parts: 1) Find the best names for the resources across predicted names, 2) plotting, sanity checks, and sampling, 3) evaluate manual review of sample
 ## Package(s): tidyverse
-## Input file(s): ner_predictions_2022-06-18.csv
+## Input file(s): ner_predictions_all_raw_2022-06-18.csv
 ## Output file(s): eval_predictions_all_2022-07-01.csv, eval_predictions_sample_2022-07-01.csv
 
 library(tidyverse)
@@ -10,9 +10,9 @@ library(tidyverse)
 ########## PART 1: Find ~ best matches for names ########## 
 ##=======================================================##
 
-pred <- read.csv("ner_predictions_2022-06-18.csv")
+pred <- read.csv("ner_predictions_all_raw_2022-06-18.csv")
 
-## separate lists using overestimates potential names/urls
+## separate lists using an overestimated # of potential names/urls
 pred <- separate(pred, 'common_name', paste("common_name", 1:10, sep="_"), sep=",", extra="drop")
 pred <- separate(pred, 'common_prob', paste("common_prob", 1:10, sep="_"), sep=",", extra="drop")
 pred <- separate(pred, 'full_name', paste("full_name", 1:10, sep="_"), sep=",", extra="drop")
@@ -22,18 +22,9 @@ pred <- separate(pred, 'url', paste("url", 1:20, sep="_"), sep=",", extra="drop"
 ## remove all NA columns (excess from overestimates)
 pred <- pred[,colSums(is.na(pred))<nrow(pred)]
 
-## convert to numeric
-pred$common_prob_1 <- as.numeric(pred$common_prob_1)
-pred$common_prob_2 <- as.numeric(pred$common_prob_2)
-pred$common_prob_3 <- as.numeric(pred$common_prob_3)
-pred$common_prob_4 <- as.numeric(pred$common_prob_4)
-pred$common_prob_5 <- as.numeric(pred$common_prob_5)
+## convert probablility columns to numeric
 
-pred$full_prob_1 <- as.numeric(pred$full_prob_1)
-pred$full_prob_2 <- as.numeric(pred$full_prob_2)
-pred$full_prob_3 <- as.numeric(pred$full_prob_3)
-pred$full_prob_4 <- as.numeric(pred$full_prob_4)
-pred$full_prob_5 <- as.numeric(pred$full_prob_5)
+pred[, c(8:12, 18:22)] <- sapply(pred[, c(8:12, 18:22)],as.numeric)
 
 ## find best returns
 pred$max_common_name_prob <- do.call(pmax, c(pred[8:12], list(na.rm=TRUE)))
@@ -70,26 +61,26 @@ pred <- pred %>%
               yes = full_name_5,
               no = "fail"))))))
 
-## find best between common and full name sincer a single name will be needed for annotations
+## find best between common and full name since a single name will be needed for annotations
 pred <- pred %>%
   group_by(ID) %>%
     mutate(best_name_overall = ifelse(test = is.na(max_full_name_prob), 
-            yes = best_common_name,
-            no = ifelse(test = is.na(max_common_name_prob), 
-                        yes = best_full_name,
-                        no = ifelse(test = (max_common_name_prob > max_full_name_prob), 
+        yes = best_common_name,
+        no = ifelse(test = is.na(max_common_name_prob), 
+              yes = best_full_name,
+              no = ifelse(test = (max_common_name_prob > max_full_name_prob), 
                                     yes = best_common_name,
                                     no = best_full_name))))
 
 ## determine which type of name was best (for the sake of reporting) 
-## NOTE for the life of me I can't figure out why I'm still getting NAs...
+
 pred <- pred %>%
   group_by(ID) %>%
-      mutate(best_name_type = ifelse(test = (best_common_name == best_name_overall), 
-                              yes = "COMMON",
-                              no = ifelse(test = is.na(best_common_name),
-                                          yes = "FULL", 
-                                          no = "FULL")))
+  mutate(best_name_type = ifelse(test = is.na(best_common_name), 
+                          yes = "FULL",
+                          no = ifelse(test = (best_common_name == best_name_overall),
+                                             yes = "COMMON", 
+                                             no = "FULL")))
 
 pred <- ungroup(pred)
 
@@ -120,16 +111,16 @@ pred$best_name_overall <- trimws(pred$best_name_overall)
 slice <- sample_frac(pred, 0.1)
 
 ## save files
-write.csv(pred,"eval_predictions_all_2022-07-01.csv", row.names = FALSE)
-write.csv(slice,"eval_predictions_sample_2022-07-01.csv", row.names = FALSE)
+write.csv(pred,"ner_predictions_all_reshape_2022-07-01.csv", row.names = FALSE)
+write.csv(slice,"ner_predictions_sample_2022-07-01.csv", row.names = FALSE)
 
 ##==========================================================##
 ########## PART 3: Evaluate manual review of sample ########## 
 ##==========================================================##
 
-pred <- read.csv("eval_predictions_all_2022-07-01.csv")
+pred <- read.csv("ner_predictions_all_reshape_2022-07-01.csv")
 
-hji <- read.csv("eval_predictions_sample_hji_2022-07-01_V4.csv")
+hji <- read.csv("ner_predictions_sample_hji_2022-07-01_V4.csv")
 hji2 <- select(hji, 1, 2, 32:45)
 
 class_count <- count(hji2, hji_classification)
@@ -141,12 +132,10 @@ test <- hji2 %>%
       mutate(mean_prob = mean(na.omit(max_common_name_prob)))
 
 test2 <- unique(select(test, hji_best_common, mean_prob))
-
 test3 <- filter(test, best_name_type == "COMMON")
 test4 <- filter(test3, hji_best_common != "CORRECT")
 
 above <- filter(hji2, max_either_prob > 0.9780) 
-## 0.76 not reviewed .... 5 of which would not be correct - 
 
 library(ggplot2)
 

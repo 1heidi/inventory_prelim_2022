@@ -1,21 +1,22 @@
-## re3data API
-
-## retrieving all resources in re3data via API
+## Purpose: Extract db records for biodata resources from re3data API
+## Parts: 1) Retrieve all records 2) filter to life science only
+## Output file(s): re3data_life_sci_2022-07-15.csv
 ## Note: correct schema (2.2) is here: https://gfzpublic.gfz-potsdam.de/pubman/faces/ViewItemOverviewPage.jsp?itemId=item_758898
 ## https://www.re3data.org/api/doc
-## https://github.com/re3data/using_the_re3data_API/blob/main/re3data_API_certification_by_type.ipynb
+## Scripts found at: https://github.com/re3data/using_the_re3data_API/blob/main/re3data_API_certification_by_type.ipynb
 
 library(httr)
 library(xml2)
 library(dplyr)
 library(tidyr)
 
+##=======================================================##
+######### PART 1: Retrieve Records from re3data.org ####### 
+##=======================================================##
+
 re3data_request <- GET("http://re3data.org/api/v1/repositories")
 re3data_IDs <- xml_text(xml_find_all(read_xml(re3data_request), xpath = "//id"))
 URLs <- paste("https://www.re3data.org/api/v1/repository/", re3data_IDs, sep = "")
-
-## check returns to see XML - will want most of that info, can start with life sciences subset
-## step by step way done in GitHub, but see looping from europePMC.R - may work better?
 
 extract_repository_info <- function(url) {
   list(
@@ -44,22 +45,25 @@ for (url in URLs) {
   repository_info <- rbind(repository_info, results_list)
 }
 
-##returned 2714 repos
+##if want to save all repos, save file here
 
-write.csv(repository_info,"re3data_all_repos_2021-08-06.csv", row.names = FALSE) 
+##=========================================================##
+######### PART 2: Filter to Life Science records only ####### 
+##=========================================================##
 
-## filter down to only life science (domain focused) - NOTE: do not remove service providers, many are data resouces
+## Notes:
+## 1) filter down to only life science (domain focused), but do not remove service providers as many are data resources
+## 2) many nat sci look to be life sci too, but not all - to stay consistent for the comparison with GBCI and FAIRsharing, restricting to Life Science only
 
-## extract "life sci" only
-## Note 1: initially included  nat sci as well since many look to be life sci too but not classified as such, but when looking at the data, too many aren't lif sci and to be more clean for comparison with GBCI and FAIRsharing, better to just include Life Science
-## Note 2: removing "other" gets rid of too much
-life_sci_re3data <- filter(repository_info, grepl("Life", subject) | grepl("Natur", subject))
-## remove any strictly institutional and not disciplinary (both okay)
+life_sci_re3data <- filter(repository_info, grepl("Life", subject))
+
+## remove any strictly institutional as these are too general purpose and any that are "other" as most of these could not count for the GBC Inventory either (e.g. city data portals and generalist non-institutional repos like figshare)
 life_sci_re3data <- filter(life_sci_re3data, life_sci_re3data$type != "institutional")
+life_sci_re3data <- filter(life_sci_re3data, life_sci_re3data$type != "other")
 
-write.csv(life_sci_re3data,"re3data_life_sci_repos_2021-08-06.csv", row.names = FALSE) 
+write.csv(life_sci_re3data,"re3data_life_sci_2022-07-15.csv", row.names = FALSE) 
 
-##what was removed - this is okay
+##what was removed - this looks basically correct
 removed <- anti_join(repository_info, life_sci_re3data)
 
 
