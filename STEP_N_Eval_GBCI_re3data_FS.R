@@ -2,13 +2,15 @@
 ## Parts: 1) find matches via names 2) plot Venn diagram
 ## Package(s): tidyverse, VennDiagram, RColorBrewer
 ## Input file(s): ner_predictions_all_reshape_2022-07-01.csv, fairsharing_life_sci_2022-07-14.csv, re3data_life_sci_2022-07-15.csv
-## Output file(s): NA
+## Output file(s): compare_pred_re3d_fs_2022-07-15.csv
 
 library(tidyverse)
+library(stringr)
+library(urltools)
 
-##=======================================================##
+##=================================================##
 ########## PART 1: Find matches via names  ########## 
-##=======================================================##
+##=================================================##
 
 pred <- read.csv("ner_predictions_all_reshape_2022-07-01.csv")
 pred <- select(pred, 1, 37, 23)
@@ -17,10 +19,19 @@ re3d <- select(re3d, 1, 5, 4)
 fs <- read.csv("fairsharing_life_sci_2022-07-14.csv")
 fs <- select(fs, 1:3)
 
-#de-duplicate pred when both names and urls are the same 
-# clean urls first or end with a / or http vs https will case reduce what should be depublicated
+# trim white space
+pred %>% 
+  mutate(across(where(is.character), str_trim))
+fd %>% 
+  mutate(across(where(is.character), str_trim))
+re3d %>% 
+  mutate(across(where(is.character), str_trim))
 
-library(urltools)
+#de-duplicate pred when both names and urls are the same 
+# clean urls first or those that end with a / or differ only between http and https will miss some that should be depublicated
+
+##remove blank urls (usually from a typo)
+pred <- pred[(which(nchar(pred$url_1) > 0)),]
 
 pred$url_1 <- sub("^http://(?:www[.])", "\\1", pred$url_1)
 pred$url_1 <- sub("^https://(?:www[.])", "\\1", pred$url_1)
@@ -56,7 +67,7 @@ library(VennDiagram)
 flog.threshold(ERROR)
 
 # generate lists
-GBC_Inventory <- pred$best_name_overall
+GBC_Inventory <- pred$best_name_overall ## note that this will assume same names should be deduped
 FAIRSharing_Life_Sci <- fs$name
 re3data_Life_Sci <- re3d$repositoryName
 
