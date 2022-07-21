@@ -19,3 +19,7 @@
 
 * work-in-progress - currently: have db records from both, comparing to preliminary NER results above
 ** NOTE: FAIRsharing data not pushed to public b/c of licencing
+
+#### Testing http status of extracted urls and Wayback Machine archieving 
+
+* work-in-progress - currently: using 10% ner prediction sample for testing; completed one run of 5x attempts at http status and wayback machine url retrieval 
