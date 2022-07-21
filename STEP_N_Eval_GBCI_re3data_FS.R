@@ -1,38 +1,33 @@
-## Purpose: Cross check FAIRsharing and re3data with Predicted Resource Names
-## Parts: 1) find matches via names 2) plot Venn diagram
-## Package(s): tidyverse, VennDiagram, RColorBrewer
+## Purpose: Cross check FAIRsharing and re3data via Resource Names and URLs
+## Parts: 1) prep and clean data 2) compare with re3data and FAIRsharing
+## Package(s): tidyverse
 ## Input file(s): ner_predictions_all_reshape_2022-07-01.csv, fairsharing_life_sci_2022-07-14.csv, re3data_life_sci_2022-07-15.csv
-## Output file(s): compare_pred_re3d_fs_2022-07-15.csv
+## Output file(s):
 
 library(tidyverse)
 library(stringr)
 library(urltools)
 
-##=================================================##
-########## PART 1: Find matches via names  ########## 
-##=================================================##
+##=====================================================##
+########## PART 1: Prep and clean data frames  ########## 
+##=====================================================##
+
+## Includes removing white space and cleaning urls, otherwise those that end with a "/" or differ only between "http" vs "https" will be missed matches
+
+## Prep predicted GBC inventory resources
+## --------------------------------------
 
 pred <- read.csv("ner_predictions_all_reshape_2022-07-01.csv")
 pred <- select(pred, 1, 37, 23)
-re3d <- read.csv("re3data_life_sci_2022-07-15.csv")
-re3d <- select(re3d, 1, 5, 4)
-fs <- read.csv("fairsharing_life_sci_2022-07-14.csv")
-fs <- select(fs, 1:3)
 
-# trim white space
+## trim white space
 pred %>% 
   mutate(across(where(is.character), str_trim))
-fd %>% 
-  mutate(across(where(is.character), str_trim))
-re3d %>% 
-  mutate(across(where(is.character), str_trim))
 
-#de-duplicate pred when both names and urls are the same 
-# clean urls first or those that end with a / or differ only between http and https will miss some that should be depublicated
-
-##remove blank urls (usually from a typo)
+## remove any blank urls
 pred <- pred[(which(nchar(pred$url_1) > 0)),]
 
+## clean urls
 pred$url_1 <- sub("^http://(?:www[.])", "\\1", pred$url_1)
 pred$url_1 <- sub("^https://(?:www[.])", "\\1", pred$url_1)
 pred$url_1 <- sub("^http://", "\\1", pred$url_1)
@@ -42,67 +37,64 @@ pred$url_1 <- sub("/$", "", pred$url_1)
 ## remove 1 character names
 pred <- pred[(which(nchar(pred$best_name_overall) > 1)),]
 
-## gather IDs 
+## for pred only, must also de-duplicate when both names and urls are the same (gather article IDs for these)
+
 pred <- pred %>% 
   group_by(best_name_overall, url_1) %>% 
    mutate(IDs = paste0(ID, collapse = ", "))
 
-##reorg and dedup
 pred <- select(pred, -1)
 pred <- pred[, c(3, 1, 2)]
 pred <- ungroup(pred)
 pred <- unique(pred)
 
-compare_pred_re3d <- full_join(pred, re3d, by = c("best_name_overall" = "repositoryName"))
-compare_pred_re3d_fs <- full_join(compare_pred_re3d, fs, by = c("best_name_overall" = "name"))
+## Prep re3data Life Science Repos
+## -------------------------------
 
-write.csv(compare_pred_re3d_fs,"compare_pred_re3d_fs_2022-07-15.csv", row.names = FALSE) ##add to gitignore 
+re3d <- read.csv("re3data_life_sci_2022-07-15.csv")
+re3d <- select(re3d, 1, 5, 4)
 
-##===========================================##
-######### PART 2: Plot Venn Diagram  ########## 
-##===========================================##
+## trim white space
+re3d %>% 
+  mutate(across(where(is.character), str_trim))
 
-library(VennDiagram)
+## remove any blank urls
+re3d <- re3d[(which(nchar(re3d$repositoryURL) > 0)),]
 
-flog.threshold(ERROR)
+## clean urls
+re3d$repositoryURL <- sub("^http://(?:www[.])", "\\1", re3d$repositoryURL)
+re3d$repositoryURL <- sub("^https://(?:www[.])", "\\1", re3d$repositoryURL)
+re3d$repositoryURL <- sub("^http://", "\\1", re3d$repositoryURL)
+re3d$repositoryURL <- sub("^https://", "\\1", re3d$repositoryURL)
+re3d$repositoryURL <- sub("/$", "", re3d$repositoryURL)
 
-# generate lists
-GBC_Inventory <- pred$best_name_overall ## note that this will assume same names should be deduped
-FAIRSharing_Life_Sci <- fs$name
-re3data_Life_Sci <- re3d$repositoryName
+## Prep FAIRsharing Life Science Repos
+## -----------------------------------
 
-library(RColorBrewer)
-myCol <- brewer.pal(3, "Pastel2")
+fs <- read.csv("fairsharing_life_sci_2022-07-14.csv")
+fs <- select(fs, 1:3)
 
-venn.diagram(
-  x = list(GBC_Inventory, FAIRSharing_Life_Sci, re3data_Life_Sci),
-  category.names = c("GBC_Inventory", "FAIRSharing_Life_Sci", "re3data_Life_Sci"),
-  filename = 'test_venn_diagramm.png',
-  output=TRUE,
-  
-  # Output features
-  imagetype="png" ,
-  height = 1020 , 
-  width = 1020 , 
-  resolution = 600,
-  compression = "lzw",
-  
-  # Circles
-  lwd = 2,
-  lty = 'blank',
-  fill = myCol,
-  
-  # Numbers
-  cex = .6,
-  fontface = "bold",
-  fontfamily = "sans",
-  
-  # Set names
-  cat.cex = 0.3,
-  cat.fontface = "bold",
-  cat.default.pos = "outer",
-  cat.pos = c(-27, 27, 135),
-  cat.dist = c(0.055, 0.055, 0.085),
-  cat.fontfamily = "sans",
-  rotation = 1
-)
+## trim white space
+fs %>% 
+  mutate(across(where(is.character), str_trim)) 
+
+## remove any blank urls
+fs <- fs[(which(nchar(fs$url) > 0)),]
+
+## clean urls
+fs$url <- sub("^http://(?:www[.])", "\\1", fs$url)
+fs$url <- sub("^https://(?:www[.])", "\\1", fs$url)
+fs$url <- sub("^http://", "\\1", fs$url)
+fs$url <- sub("^https://", "\\1", fs$url)
+fs$url <- sub("/$", "", fs$url)
+
+##==============================================================##
+########## PART 2: Compare with re3data and FAIRsharing ########## 
+##==============================================================##
+
+names_pred_re3d <- inner_join(pred, re3d, by = c("best_name_overall" = "repositoryName"))
+urls_pred_re3d <- inner_join(pred, re3d, by = c("url_1" = "repositoryURL"))
+
+names_pred_fs <- inner_join(pred, fs, by = c("best_name_overall" = "name"))
+urls_pred_fs <- inner_join(pred, fs, by = c("url_1" = "url"))
+
