@@ -23,3 +23,7 @@
 #### Testing http status of extracted urls and Wayback Machine archiving 
 
 * work-in-progress - currently: using 10% ner prediction sample for testing; completed one run of 5x attempts at http status and wayback machine url retrieval 
+  * 323/467 (69.1%) return 200 (108 failed by timeout, etc & 36 returned unsuccessful codes)
+  * 390/467 (83.5%) return a wayback machine url
+  * 37/467 (7.9%) have no successful url (either 200 extracted or wayback machine url)
+
