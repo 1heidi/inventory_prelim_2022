@@ -2,7 +2,7 @@
 ## Parts: 1) Check status of extracted urls 2) find archived URLs in Wayback Machine
 ## Package(s): wayback, dplyr, httr, RCurl
 ## Input file(s): ner_predictions_sample_2022-07-01.csv
-## Output file(s):
+## Output file(s): ner_predictions_sample_URL_check_2022-07-21.csv
 ## Notes: wayback package is only on Github https://github.com/hrbrmstr/wayback
 
 library(wayback)
@@ -155,13 +155,11 @@ for (url in urls5) {
 
 t <- left_join(test, wayback, by = c("input_URL" = "url"))
 t <- select(t, 1, 3, 5, 6)
+
 names(t)[names(t)=="input_URL"] <- "extracted_url"
 names(t)[names(t)=="status_code"] <- "extracted_url_status"
 names(t)[names(t)=="closet_url"] <- "wayback_url" ## [sic] closet
 names(t)[names(t)=="timestamp"] <- "wayback_url_timestamp"
 
-na <- sum(is.na(t$wayback_url)) 
-
-sum(t$extracted_url_status == 200)
-sum(t$extracted_url_status != 200 & is.na(t$wayback_url))
+write.csv(t,"ner_predictions_sample_URL_check_2022-07-21.csv", row.names = FALSE) 
 
