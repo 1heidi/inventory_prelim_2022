@@ -33,6 +33,7 @@ pred$url_1 <- sub("^https://(?:www[.])", "\\1", pred$url_1)
 pred$url_1 <- sub("^http://", "\\1", pred$url_1)
 pred$url_1 <- sub("^https://", "\\1", pred$url_1)
 pred$url_1 <- sub("/$", "", pred$url_1)
+pred$url_1 <- tolower(pred$url_1)
 
 ## remove 1 character names
 pred <- pred[(which(nchar(pred$best_name_overall) > 1)),]
@@ -67,6 +68,7 @@ re3d$repositoryURL <- sub("^https://(?:www[.])", "\\1", re3d$repositoryURL)
 re3d$repositoryURL <- sub("^http://", "\\1", re3d$repositoryURL)
 re3d$repositoryURL <- sub("^https://", "\\1", re3d$repositoryURL)
 re3d$repositoryURL <- sub("/$", "", re3d$repositoryURL)
+re3d$repositoryURL <- tolower(re3d$repositoryURL)
 
 ## Prep FAIRsharing Life Science Repos
 ## -----------------------------------
@@ -87,14 +89,26 @@ fs$url <- sub("^https://(?:www[.])", "\\1", fs$url)
 fs$url <- sub("^http://", "\\1", fs$url)
 fs$url <- sub("^https://", "\\1", fs$url)
 fs$url <- sub("/$", "", fs$url)
+fs$url <- tolower(fs$url)
 
 ##==============================================================##
 ########## PART 2: Compare with re3data and FAIRsharing ########## 
 ##==============================================================##
 
+## re3data
 names_pred_re3d <- inner_join(pred, re3d, by = c("best_name_overall" = "repositoryName"))
 urls_pred_re3d <- inner_join(pred, re3d, by = c("url_1" = "repositoryURL"))
 
+## find unique names between the two
+com_re3d <- unique(c(names_pred_re3d$best_name_overall, urls_pred_re3d$best_name_overall))
+
+## fairsharing
 names_pred_fs <- inner_join(pred, fs, by = c("best_name_overall" = "name"))
 urls_pred_fs <- inner_join(pred, fs, by = c("url_1" = "url"))
+
+## find unique names between the two
+com_fs <- unique(c(names_pred_fs$best_name_overall, urls_pred_fs$best_name_overall))
+
+## find unique names between re3data and fairsharing
+com_fs_re3d <- unique(c(com_re3d, com_fs))
 
