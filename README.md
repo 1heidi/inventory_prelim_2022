@@ -36,5 +36,11 @@
      * see all_unmatched_query_check_2022-09-17.csv those that are not in common
   * there are 195 records in the manually curated training dataset that are not part of the new query results
       * see manually_classified_not_in_new_query_2022-09-17.csv
+      
+#### Comparsion of results between June ner predictions and September
+* work-in-progress - checking old predictions not found this time to see if junky or just not in the query to begin
+  * see script - STEP_N_Compare_NER_Predictions.R
+  * only 188 previously predicted in June are not in the new query returns, for the others that were available, lots just failed to return a prediction this time but worked okay before (decent probabilities and spot checking text, many or even most look right) - something wonky?
+  * see compare_ner_results_2022-09-17.csv
 
 
