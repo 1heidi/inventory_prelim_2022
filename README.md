@@ -29,6 +29,7 @@
   
 #### Comparsion of results between original query (old) and optimized query (new) 
 * work-in-progress - compared PMIDs returned from both to make sure the new query is performing better (and not wildly different)
+  * see script - STEP_N_Query_Comparison.R
   * old - returns 22169
   * new - returns 21414, filters much better for clinical trials, plus the wileyonline, zenodo, etc. that were returned in the old query. Does not returning some that did return via the old and seem like should return via the new query as well (e.g.24876870, 34644572, 21804097, 27899610 - I am checking with EPMC on this); is returning some new too ...
     * total unique between both new and old = 22958, 20625 in common between both, 789 unique to new (now returned when did not before), 1544 unique to old query (no longer returning with new query)
