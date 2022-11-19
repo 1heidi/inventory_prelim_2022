@@ -73,7 +73,7 @@ f_dbs <- left_join(f, best_names)
 
 funders <- f_dbs %>%
   group_by(agency) %>%
-    mutate(count_all_funder_metadata_instances = length(id)) %>%
+    mutate(count_all_article_instances = length(id)) %>%
       mutate(count_unique_articles = length(unique(id))) %>%
         mutate(count_unique_biodata_resources = length(unique(best_name))) %>%
            mutate(list_PMIDs_for_funder = str_c(id, collapse = ", "))
@@ -85,6 +85,7 @@ funders2 <- unique(select(funders, 2,4:7))
 
 ## example with National Natural Science Foundation of China
 NNFSC <- unique(filter(funders, agency == "National Natural Science Foundation of China"))
+NNFSC <- select(NNFSC, 1:3)
 
 ##=====================================##
 ####### PART 3: Save output files ####### 
